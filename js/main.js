@@ -1,4 +1,5 @@
-import { users } from "./script.js";
+import { users, gradation } from "./script.js";
+const resultEl = document.querySelector(".users");
 
 class User {
   constructor(img, name, age, courses = []) {
@@ -7,12 +8,54 @@ class User {
     this.age = age;
     this.courses = courses;
   }
+
   render() {
-    console.log("render: ", this.img, this.name, this.age);
-    this.renderCourses();
+    let result = `
+    <div class="user">    
+      <div class="user__info">
+        <div class="user__info--data">
+            <img src="images/users/${this.img}.png" alt="${
+      this.name
+    }" height="50">
+            <div class="user__naming">
+                <p>Name: <b>${this.name}</b></p>
+                <p>Age: <b>${this.age}</b></p>
+            </div>
+        </div>
+        <div class="user__info--role ${this.role}">
+            <img src="images/roles/${this.role}.png" alt="${
+      this.role
+    }" height="25">
+            <p>${this.role}</p>
+        </div>
+      </div>
+      ${this.renderCourses()}
+    </div>`;
+    return result;
   }
+
   renderCourses() {
-    console.log("renderCourses", this.courses);
+    let result = `
+    <div class="user__courses">
+    ${this.courses
+      .map(
+        (course) => `
+      <p class="user__courses--course ${this.role}">${
+          course.title
+        }<span class="${this.calculateGrade(
+          course.mark
+        )}">${this.calculateGrade(course.mark)}</span></p>`
+      )
+      .join("")}
+      
+    </div>`;
+    return result;
+  }
+  calculateGrade(mark) {
+    return Object.entries(gradation).reduce((acc, variant) => {
+      if (mark >= variant[0]) return variant[1];
+      else return acc;
+    }, "");
   }
 }
 
@@ -28,12 +71,53 @@ class Lector extends User {
     super(img, name, age, courses);
     this.role = role;
   }
+  renderCourses() {
+    let result = `
+      <div class="user__courses admin--info">
+    ${this.courses
+      .map(
+        (course) => `
+        <div class="user__courses--course lector">
+          <p>Title: <b>${course.title}</b></p>
+          <p>Lector's score: <span class="${this.calculateGrade(
+            course.score
+          )}">${this.calculateGrade(course.score)}</span></p>
+          <p>Average student's score: <span class="${this.calculateGrade(
+            course.studentsScore
+          )}">${this.calculateGrade(course.studentsScore)}</span></p>
+        </div>
+    `
+      )
+      .join("")}
+    </div>`;
+    return result;
+  }
 }
 
 class Admin extends User {
   constructor(img, name, age, courses, role) {
     super(img, name, age, courses);
     this.role = role;
+  }
+  renderCourses() {
+    let result = `
+    <div class="user__courses admin--info">
+    ${this.courses
+      .map(
+        (course) => `
+        <div class="user__courses--course ${this.role}">
+          <p>Title: <b>${course.title}</b></p>
+          <p>Admin's score: <span class="${this.calculateGrade(
+            course.score
+          )}">${this.calculateGrade(course.score)}</span></p>
+          <p>Lector: <b>${course.lector}</b></p>
+        </div>
+    `
+      )
+      .join("")}
+      
+    </div>`;
+    return result;
   }
 }
 
@@ -82,7 +166,7 @@ for (let i = 0; i < users.length; i++) {
       break;
   }
 }
-console.log("🚀 ~ file: main.js:51 ~ arrayOfObjects:", arrayOfObjects);
+
 arrayOfObjects.forEach((object) => {
-  object.render();
+  resultEl.insertAdjacentHTML("beforeend", object.render());
 });
